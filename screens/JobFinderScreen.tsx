@@ -1,4 +1,4 @@
-// screens/JobFinderScreen.js
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
@@ -17,7 +17,7 @@ const JobFinderScreen = ({ navigation }) => {
 
   const fetchJobs = async () => {
     try {
-      const response = await axios.get('https://empllo.com/api/v1/jobs');
+      const response = await axios.get('https://empllo.com/api/v1');
       setJobs(response.data.map(job => ({ ...job, id: uuidv4() })));
     } catch (error) {
       console.error(error);
