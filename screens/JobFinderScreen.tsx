@@ -1,9 +1,9 @@
-// screens/JobFinderScreen.js
+
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Button } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { useJobs } from '../context/JobContext';
-import { useTheme } from '../context/ThemeContext'; // Import useTheme
+import { useTheme } from '../context/ThemeContext';
 
 const JobFinderScreen = ({ navigation }) => {
   const [jobs, setJobs] = useState([]);
@@ -11,7 +11,7 @@ const JobFinderScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { saveJob } = useJobs();
-  const { colors, toggleTheme, isDarkMode } = useTheme(); // Use theme colors and toggle function
+  const { colors, toggleTheme, isDarkMode } = useTheme(); 
 
   useEffect(() => {
     fetchJobs();
@@ -52,7 +52,7 @@ const JobFinderScreen = ({ navigation }) => {
   );
 
   const applyForJob = (job) => {
-    // Handle the apply action
+    
     console.log('Applying for job:', job);
     alert('Apply button clicked!');
   };

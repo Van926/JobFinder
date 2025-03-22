@@ -1,4 +1,4 @@
-// context/ThemeContext.js
+
 import React, { createContext, useState, useContext } from 'react';
 
 const ThemeContext = createContext();
@@ -23,8 +23,8 @@ export const ThemeProvider = ({ children }) => {
           cardBackground: '#1e1e1e',
           cardText: '#ffffff',
           border: '#333333',
-          buttonBackground: 'orange', // Dark mode button background
-          buttonText: '#ffffff', // Dark mode button text
+          buttonBackground: 'orange', 
+          buttonText: '#ffffff', 
         }
       : {
           background: '#ffffff',
@@ -34,8 +34,8 @@ export const ThemeProvider = ({ children }) => {
           cardBackground: '#f5f5f5',
           cardText: '#000000',
           border: '#cccccc',
-          buttonBackground: 'green', // Light mode button background
-          buttonText: '#ffffff', // Light mode button text
+          buttonBackground: 'green', 
+          buttonText: '#ffffff', 
         },
   };
 

@@ -1,19 +1,17 @@
-// App.js
+
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { JobProvider } from './context/JobContext';
-import { ThemeProvider, useTheme } from './context/ThemeContext'; // Import useTheme
-import JobFinderScreen from './screens/JobFinderScreen';
+import { ThemeProvider, useTheme } from './context/ThemeContext'; 
 import SavedJobsScreen from './screens/SavedJobsScreen';
-import { TouchableOpacity, View, Text } from 'react-native'; // Import necessary components
-
+import { TouchableOpacity, View, Text } from 'react-native'; 
 const Stack = createStackNavigator();
 
-// Create a custom header component to use the theme
+
 const AppHeader = ({ navigation }) => {
-  const theme = useTheme(); // Use theme context
+  const theme = useTheme(); 
 
   return (
     <View style={styles.headerRightContainer}>
@@ -22,7 +20,7 @@ const AppHeader = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          console.log('Theme toggle icon pressed'); // Debug log
+          console.log('Theme toggle icon pressed'); 
           theme.toggleTheme();
         }}
         style={styles.themeToggleButton}
@@ -45,7 +43,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={({ navigation }) => {
-              const theme = useTheme(); // Use theme context here
+              const theme = useTheme(); 
               return {
                 headerStyle: {
                   backgroundColor:'orange',
@@ -61,7 +59,7 @@ export default function App() {
               name="JobFinder"
               component={JobFinderScreen}
               options={({ navigation }) => {
-                const theme = useTheme(); // Use theme context here
+                const theme = useTheme(); 
                 return {
                   title: 'LinkedOut',
                   headerLeft: () => (

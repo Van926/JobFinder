@@ -15,8 +15,8 @@ const SavedJobsScreen = () => {
   const [hireReason, setHireReason] = useState('');
 
   const applyForJob = (job) => {
-    setSelectedJob(job); // Set the selected job
-    setIsFormVisible(true); // Show the form modal
+    setSelectedJob(job); 
+    setIsFormVisible(true); 
   };
 
   const handleSubmit = () => {
@@ -31,7 +31,7 @@ const SavedJobsScreen = () => {
     console.log('Contact Number:', contactNumber);
     console.log('Why should we hire you?', hireReason);
   
-    // Reset form fields and close modal
+    
     setName('');
     setEmail('');
     setContactNumber('');
@@ -77,12 +77,11 @@ const SavedJobsScreen = () => {
         <Text style={[styles.noJobsText, { color: colors.text }]}>No saved jobs found.</Text>
       )}
 
-      {/* Application Form Modal */}
       <Modal visible={isFormVisible} animationType="slide" transparent={false}>
         <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <Text style={[styles.modalTitle, { color: colors.text }]}>Application Form</Text>
 
-          {/* Form Fields */}
+          
           <TextInput
             style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
             placeholder="Name"
@@ -115,7 +114,7 @@ const SavedJobsScreen = () => {
             multiline
           />
 
-          {/* Submit and Cancel Buttons */}
+         
           <View style={styles.modalButtonContainer}>
             <Button title="Submit" onPress={handleSubmit} />
             <Button title="Cancel" onPress={() => setIsFormVisible(false)} />
