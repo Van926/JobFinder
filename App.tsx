@@ -6,7 +6,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { JobProvider } from './context/JobContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext'; 
 import SavedJobsScreen from './screens/SavedJobsScreen';
-import JobFinderScreen from './screens/JobFinderScreen';
 import { TouchableOpacity, View, Text } from 'react-native'; 
 const Stack = createStackNavigator();
 
@@ -21,7 +20,7 @@ const AppHeader = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          console.log('Theme toggle icon pressed'); 
+          console.log('Theme toggle icon pressed'); // Debug log
           theme.toggleTheme();
         }}
         style={styles.themeToggleButton}
@@ -44,7 +43,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={({ navigation }) => {
-              const theme = useTheme(); 
+              const theme = useTheme(); // Use theme context here
               return {
                 headerStyle: {
                   backgroundColor:'orange',
@@ -60,7 +59,7 @@ export default function App() {
               name="JobFinder"
               component={JobFinderScreen}
               options={({ navigation }) => {
-                const theme = useTheme(); 
+                const theme = useTheme(); // Use theme context here
                 return {
                   title: 'LinkedOut',
                   headerLeft: () => (

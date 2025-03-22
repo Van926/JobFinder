@@ -1,42 +1,64 @@
-
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Button } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Button,
+} from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { useJobs } from '../context/JobContext';
-import { useTheme } from '../context/ThemeContext'; 
-
+import { useTheme } from '../context/ThemeContext';
+interface Job {
+  id: string;
+  title: string;
+  mainCategory: string;
+  companyName: string;
+  jobType: string;
+  locations: string;
+  workModel: string;
+  seniorityLevel: string;
+  
+}
 const JobFinderScreen = ({ navigation }) => {
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { saveJob } = useJobs();
-  const { colors, toggleTheme, isDarkMode } = useTheme(); 
+  const { colors, toggleTheme, isDarkMode } = useTheme();
+  const [test1, setTest1] = useState('');
+  const [test2, setTest2] = useState('');
+  const [test3, setTest3] = useState('');
   useEffect(() => {
     fetchJobs();
   }, []);
 
   const fetchJobs = async () => {
     try {
-      const response = await fetch('https://remotive.io/api/remote-jobs');
+      setTest3('Test 3')
+      const response = await fetch('https://empllo.com/api/v1');
       const data = await response.json();
-      
+      console.log('API Response:', data.jobs);
+      setTest1('Test 1')
       if (!data.jobs || !Array.isArray(data.jobs)) {
         throw new Error('Invalid jobs format');
       }
 
-      const jobsWithIds = data.jobs.map((job) => ({
-        id: job.id || uuidv4(),
+      const jobsWithIds = data.jobs.map((job: Job) => ({
+        id: 'TEST',
         title: job.title || 'No Title',
-        description: job.description || 'No Description',
-        category: job.Category || 'Unknown Category',
-        companyName: job.company_name || 'Unknown Company',
-        jobType: job.job_type || 'Job Type Unspecified',
-        locations: job.candidate_required_location ? [job.candidate_required_location] : ['Location not Specified'],
-        minSalary: job.salary ? job.salary.split(' - ')[0] : 'Minimum Salary Unavailable',
-        maxSalary: job.salary ? job.salary.split(' - ')[1] : 'Max Salary Unavailable',
+        mainCategory: job.mainCategory || 'Unknown Category',
+        companyName: job.companyName || 'Unknown Company',
+        jobType: job.jobType || 'Job Type Unspecified',
+        locations: job.locations || ['Location not Specified'],
+        workModel:job.workModel ||'Work Model unpecified',
+        seniorityLevel:job.seniorityLevel ||'Seniority Level unspecified',
       }));
-
+      setTest2('Test 2')
       setJobs(jobsWithIds);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
@@ -46,12 +68,11 @@ const JobFinderScreen = ({ navigation }) => {
     }
   };
 
-  const filteredJobs = jobs.filter((job) =>
+  const filteredJobs = jobs.filter((job: Job) =>
     job.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const applyForJob = (job) => {
-    // Handle the apply action
+  const applyForJob = (job: Job) => {
     console.log('Applying for job:', job);
     alert('Apply button clicked!');
   };
@@ -78,8 +99,16 @@ const JobFinderScreen = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+    
       <TextInput
-        style={[styles.searchBar, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
+        style={[
+          styles.searchBar,
+          {
+            backgroundColor: colors.cardBackground,
+            color: colors.text,
+            borderColor: colors.border,
+          },
+        ]}
         placeholder="Search jobs..."
         placeholderTextColor={colors.text}
         value={searchQuery}
@@ -90,36 +119,58 @@ const JobFinderScreen = ({ navigation }) => {
           data={filteredJobs}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <View style={[styles.jobItem, { backgroundColor: colors.cardBackground }]}>
-              <Text style={[styles.jobTitle, { color: colors.text }]}>{item.title}</Text>
-              <Text style={{ color: colors.text }}>Company: {item.companyName}</Text>
-              <Text style={{ color: colors.text }}>Job: {item.jobType}</Text>
-        
-              <Text style={{ color: colors.text }}>Location: {item.locations.join(', ')}</Text>
-              <Text style={{ color: colors.text }}>
-                Salary: {item.minSalary} - {item.maxSalary}
+            <View
+              style={[
+                styles.jobItem,
+                { backgroundColor: colors.cardBackground },
+              ]}>
+              <Text style={[styles.jobTitle, { color: colors.text }]}>
+                {item.title}
               </Text>
+              <Text style={{ color: colors.text }}>
+                Company: {item.companyName}
+              </Text>
+              <Text style={{ color: colors.text }}>Job: {item.jobType}</Text>
+              <Text style={{ color: colors.text }}>Seniority Level: {item.seniorityLevel}</Text>
+              <Text style={{ color: colors.text }}>Work Model: {item.workModel}</Text>
+
+              <Text style={{ color: colors.text }}>
+                Location: {item.locations.join(', ')}
+              </Text>
+
 
               {/* Buttons */}
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => saveJob(item)}
-                >
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>Save Job</Text>
+                  style={[
+                    styles.button,
+                    { backgroundColor: colors.buttonBackground },
+                  ]}
+                  onPress={() => saveJob(item)}>
+                  <Text
+                    style={[styles.buttonText, { color: colors.buttonText }]}>
+                    Save Job
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => applyForJob(item)}
-                >
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>Apply</Text>
+                  style={[
+                    styles.button,
+                    { backgroundColor: colors.buttonBackground },
+                  ]}
+                  onPress={() => applyForJob(item)}>
+                  <Text
+                    style={[styles.buttonText, { color: colors.buttonText }]}>
+                    Apply
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
           )}
         />
       ) : (
-        <Text style={[styles.noJobsText, { color: colors.text }]}>No jobs found.</Text>
+        <Text style={[styles.noJobsText, { color: colors.text }]}>
+          No jobs found.
+        </Text>
       )}
     </View>
   );

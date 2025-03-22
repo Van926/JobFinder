@@ -77,11 +77,12 @@ const SavedJobsScreen = () => {
         <Text style={[styles.noJobsText, { color: colors.text }]}>No saved jobs found.</Text>
       )}
 
+      {/* Application Form Modal */}
       <Modal visible={isFormVisible} animationType="slide" transparent={false}>
         <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <Text style={[styles.modalTitle, { color: colors.text }]}>Application Form</Text>
 
-          
+          {/* Form Fields */}
           <TextInput
             style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
             placeholder="Name"
@@ -114,7 +115,7 @@ const SavedJobsScreen = () => {
             multiline
           />
 
-         
+          {/* Submit and Cancel Buttons */}
           <View style={styles.modalButtonContainer}>
             <Button title="Submit" onPress={handleSubmit} />
             <Button title="Cancel" onPress={() => setIsFormVisible(false)} />
