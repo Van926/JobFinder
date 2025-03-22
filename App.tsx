@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { JobProvider } from './context/JobContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext'; 
 import SavedJobsScreen from './screens/SavedJobsScreen';
+import JobFinderScreen from './screens/JobFinderScreen';
 import { TouchableOpacity, View, Text } from 'react-native'; 
 const Stack = createStackNavigator();
 
