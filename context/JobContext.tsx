@@ -24,7 +24,15 @@ export const JobProvider = ({ children }) => {
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
 
   const saveJob = (job: Job) => {
-    setSavedJobs(prev => [...prev, job]);
+    setSavedJobs(prev => {
+      
+      const isAlreadySaved = prev.some(savedJob => savedJob.id === job.id);
+      if (isAlreadySaved) {
+        return prev; // Return previous state if already saved
+      }
+      return [...prev, job];
+      
+    });
   };
 
   const removeJob = (id: string) => {

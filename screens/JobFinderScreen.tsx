@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Modal
+  Modal,
+  Alert,
 } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { useJobs } from '../context/JobContext';
@@ -122,12 +123,13 @@ const JobFinderScreen = ({ navigation }) => {
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
-
+      
       {filteredJobs.length > 0 ? (
         <FlatList
           data={filteredJobs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
+            
             <View style={[styles.jobItem, { backgroundColor: colors.cardBackground }]}>
               <Text style={[styles.jobTitle, { color: colors.text }]}>{item.title}</Text>
               <Text style={{ color: colors.text }}>Company: {item.companyName}</Text>
@@ -141,6 +143,7 @@ const JobFinderScreen = ({ navigation }) => {
           <Text style={[styles.appliedText, { color: colors.text }]}>
             You have already applied
           </Text>
+          
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#ff4444' }]}
             onPress={() => cancelApplication(item.id)}
@@ -152,20 +155,30 @@ const JobFinderScreen = ({ navigation }) => {
         </>
       ) : (
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
+               <TouchableOpacity
                   style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => saveJob(item)}
-                >
+                  onPress={() => {
+                    saveJob(item);
+                    Alert.alert(
+                      'Job Saved',
+                      'The job has been successfully saved.', // Corrected message string
+                      [{ text: 'OK' }] // Properly formatted alert buttons array
+                    );
+                  }}
+                >   
                   <Text style={[styles.buttonText, { color: colors.buttonText }]}>
                     Save Job
                   </Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[styles.button, { backgroundColor: colors.buttonBackground }]}
                   onPress={() => {
+                    
                     applyForJob(item.id);
                     setSelectedJob(item);
                     setIsFormVisible(true);
+                  
                   }}
                 >
                   <Text style={[styles.buttonText, { color: colors.buttonText }]}>
