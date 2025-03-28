@@ -1,44 +1,21 @@
-// screens/SavedJobsScreen.js
-import React, { useState, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, TextInput, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { useJobs } from '../context/JobContext';
-import { useTheme } from '../context/ThemeContext'; // Import useTheme
+import { useTheme } from '../context/ThemeContext';
+import ApplicationForm from './ApplicationFormScreen';
 
 const SavedJobsScreen = () => {
-  const { savedJobs, removeJob } = useJobs();
-  const { colors } = useTheme(); // Use theme colors
-  const [isFormVisible, setIsFormVisible] = useState(false); // State to control modal visibility
-  const [selectedJob, setSelectedJob] = useState(null); // Track the selected job for applying
-  const [name, setName] = useState(''); // Form fields
-  const [email, setEmail] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [hireReason, setHireReason] = useState('');
+  const { savedJobs, removeJob, applyForJob, cancelApplication } = useJobs();
+  const { colors } = useTheme();
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
-  const applyForJob = (job) => {
-    setSelectedJob(job); 
-    setIsFormVisible(true); 
-  };
-
-  const handleSubmit = () => {
-    if (!name || !email || !contactNumber || !hireReason) {
-      alert('Please fill out all fields.');
-      return;
-    }
-  
-    console.log('Application submitted for job:', selectedJob);
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Contact Number:', contactNumber);
-    console.log('Why should we hire you?', hireReason);
-  
-    
-    setName('');
-    setEmail('');
-    setContactNumber('');
-    setHireReason('');
+  const handleSubmitApplication = (application) => {
+    console.log('Application submitted:', application);
     setIsFormVisible(false);
-    alert('Application submitted successfully!');
+    alert(`Application for ${application.jobTitle} submitted successfully!`);
   };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {savedJobs.length > 0 ? (
@@ -48,79 +25,75 @@ const SavedJobsScreen = () => {
           renderItem={({ item }) => (
             <View style={[styles.jobItem, { backgroundColor: colors.cardBackground }]}>
               <Text style={[styles.jobTitle, { color: colors.text }]}>{item.title}</Text>
-              <Text style={{ color: colors.text }}>{item.companyName}</Text>
-              <Text style={{ color: colors.text }}>{item.jobType}</Text>
-              <Text style={{ color: colors.text }}>{item.locations.join(', ')}</Text>
-              <Text style={{ color: colors.text }}>
-                Salary: {item.minSalary} - {item.maxSalary}
-              </Text>
+              <Text style={{ color: colors.text }}>Company: {item.companyName}</Text>
+              <Text style={{ color: colors.text }}>Type: {item.jobType}</Text>
+              <Text style={{ color: colors.text }}>Location: {item.locations.join(', ')}</Text>
 
-              {/* Buttons */}
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => applyForJob(item)}
-                >
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>Apply</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => removeJob(item.id)}
-                >
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>Remove</Text>
-                </TouchableOpacity>
-              </View>
+              {item.isApplied ? (
+                <>
+                  <Text style={[styles.appliedText, { color: colors.text }]}>
+                    You have already applied
+                  </Text>
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: '#ff4444' }]}
+                      onPress={() => cancelApplication(item.id)}
+                    >
+                      <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                        Cancel Application
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                      onPress={() => removeJob(item.id)}
+                    >
+                      <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                        Remove
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                    onPress={() => {
+                      applyForJob(item.id);
+                      setSelectedJob(item);
+                      setIsFormVisible(true);
+                    }}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                      Apply
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                    onPress={() => removeJob(item.id)}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                      Remove
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
         />
       ) : (
-        <Text style={[styles.noJobsText, { color: colors.text }]}>No saved jobs found.</Text>
+        <Text style={[styles.noJobsText, { color: colors.text }]}>
+          No saved jobs found
+        </Text>
       )}
 
-      {/* Application Form Modal */}
-      <Modal visible={isFormVisible} animationType="slide" transparent={false}>
-        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <Text style={[styles.modalTitle, { color: colors.text }]}>Application Form</Text>
-
-          {/* Form Fields */}
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-            placeholder="Name"
-            placeholderTextColor={colors.text}
-            value={name}
-            onChangeText={setName}
+      <Modal visible={isFormVisible} animationType="slide">
+        {selectedJob && (
+          <ApplicationForm
+            jobTitle={selectedJob.title}
+            onSubmit={handleSubmitApplication}
+            onCancel={() => setIsFormVisible(false)}
           />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-            placeholder="Email"
-            placeholderTextColor={colors.text}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border }]}
-            placeholder="Contact Number"
-            placeholderTextColor={colors.text}
-            value={contactNumber}
-            onChangeText={setContactNumber}
-            keyboardType="phone-pad"
-          />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.cardBackground, color: colors.text, borderColor: colors.border, height: 100 }]}
-            placeholder="Why should we hire you?"
-            placeholderTextColor={colors.text}
-            value={hireReason}
-            onChangeText={setHireReason}
-            multiline
-          />
-
-          {/* Submit and Cancel Buttons */}
-          <View style={styles.modalButtonContainer}>
-            <Button title="Submit" onPress={handleSubmit} />
-            <Button title="Cancel" onPress={() => setIsFormVisible(false)} />
-          </View>
-        </View>
+        )}
       </Modal>
     </View>
   );
@@ -144,6 +117,7 @@ const styles = StyleSheet.create({
   jobTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 4,
   },
   noJobsText: {
     fontSize: 16,
@@ -165,28 +139,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-    justifyContent: 'center',
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  appliedText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginVertical: 8,
     textAlign: 'center',
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
+    color: '#4CAF50',
   },
 });
 

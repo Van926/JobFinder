@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,43 +7,45 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Button,
+  Modal
 } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 import { useJobs } from '../context/JobContext';
 import { useTheme } from '../context/ThemeContext';
+import ApplicationForm from './ApplicationFormScreen';
+
 interface Job {
   id: string;
   title: string;
   mainCategory: string;
   companyName: string;
   jobType: string;
-  locations: string;
+  locations: string[];
   workModel: string;
   seniorityLevel: string;
-  
 }
+
 const JobFinderScreen = ({ navigation }) => {
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { saveJob } = useJobs();
-  const { colors, toggleTheme, isDarkMode } = useTheme();
-  const [test1, setTest1] = useState('');
-  const [test2, setTest2] = useState('');
-  const [test3, setTest3] = useState('');
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+   const { saveJob, applyForJob, cancelApplication } = useJobs();
+  const { colors } = useTheme();
+
   useEffect(() => {
     fetchJobs();
   }, []);
 
   const fetchJobs = async () => {
     try {
-      setTest3('Test 3')
+     
       const response = await fetch('https://empllo.com/api/v1');
       const data = await response.json();
-      console.log('API Response:', data.jobs);
-      setTest1('Test 1')
+      
+      
       if (!data.jobs || !Array.isArray(data.jobs)) {
         throw new Error('Invalid jobs format');
       }
@@ -58,7 +60,7 @@ const JobFinderScreen = ({ navigation }) => {
         workModel:job.workModel ||'Work Model unpecified',
         seniorityLevel:job.seniorityLevel ||'Seniority Level unspecified',
       }));
-      setTest2('Test 2')
+    
       setJobs(jobsWithIds);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
@@ -72,9 +74,16 @@ const JobFinderScreen = ({ navigation }) => {
     job.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const applyForJob = (job: Job) => {
-    console.log('Applying for job:', job);
-    alert('Apply button clicked!');
+  const handleSubmitApplication = (application: {
+    name: string;
+    email: string;
+    contactNumber: string;
+    hireReason: string;
+    jobTitle: string;
+  }) => {
+    console.log('Application submitted:', application);
+    setIsFormVisible(false);
+    alert(`Application for ${application.jobTitle} submitted successfully!`);
   };
 
   if (loading) {
@@ -99,7 +108,6 @@ const JobFinderScreen = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-    
       <TextInput
         style={[
           styles.searchBar,
@@ -114,64 +122,75 @@ const JobFinderScreen = ({ navigation }) => {
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
+
       {filteredJobs.length > 0 ? (
         <FlatList
           data={filteredJobs}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View
-              style={[
-                styles.jobItem,
-                { backgroundColor: colors.cardBackground },
-              ]}>
-              <Text style={[styles.jobTitle, { color: colors.text }]}>
-                {item.title}
-              </Text>
-              <Text style={{ color: colors.text }}>
-                Company: {item.companyName}
-              </Text>
+            <View style={[styles.jobItem, { backgroundColor: colors.cardBackground }]}>
+              <Text style={[styles.jobTitle, { color: colors.text }]}>{item.title}</Text>
+              <Text style={{ color: colors.text }}>Company: {item.companyName}</Text>
               <Text style={{ color: colors.text }}>Job: {item.jobType}</Text>
               <Text style={{ color: colors.text }}>Seniority Level: {item.seniorityLevel}</Text>
               <Text style={{ color: colors.text }}>Work Model: {item.workModel}</Text>
+              <Text style={{ color: colors.text }}>Location: {item.locations.join(', ')}</Text>
 
-              <Text style={{ color: colors.text }}>
-                Location: {item.locations.join(', ')}
-              </Text>
-
-
-              {/* Buttons */}
+              {item.isApplied ? (
+        <>
+          <Text style={[styles.appliedText, { color: colors.text }]}>
+            You have already applied
+          </Text>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#ff4444' }]}
+            onPress={() => cancelApplication(item.id)}
+          >
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+              Cancel Application
+            </Text>
+          </TouchableOpacity>
+        </>
+      ) : (
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={[
-                    styles.button,
-                    { backgroundColor: colors.buttonBackground },
-                  ]}
-                  onPress={() => saveJob(item)}>
-                  <Text
-                    style={[styles.buttonText, { color: colors.buttonText }]}>
+                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                  onPress={() => saveJob(item)}
+                >
+                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>
                     Save Job
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[
-                    styles.button,
-                    { backgroundColor: colors.buttonBackground },
-                  ]}
-                  onPress={() => applyForJob(item)}>
-                  <Text
-                    style={[styles.buttonText, { color: colors.buttonText }]}>
+                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                  onPress={() => {
+                    applyForJob(item.id);
+                    setSelectedJob(item);
+                    setIsFormVisible(true);
+                  }}
+                >
+                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>
                     Apply
                   </Text>
                 </TouchableOpacity>
               </View>
+            )}
             </View>
-          )}
+        )}
         />
       ) : (
-        <Text style={[styles.noJobsText, { color: colors.text }]}>
-          No jobs found.
-        </Text>
+        <Text style={[styles.noJobsText, { color: colors.text }]}>No jobs found.</Text>
       )}
+
+      {/* Application Form Modal */}
+      <Modal visible={isFormVisible} animationType="slide">
+        {selectedJob && (
+          <ApplicationForm
+            jobTitle={selectedJob.title}
+            onSubmit={handleSubmitApplication}
+            onCancel={() => setIsFormVisible(false)}
+          />
+        )}
+      </Modal>
     </View>
   );
 };
@@ -206,6 +225,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   buttonContainer: {
     flexDirection: 'row',
