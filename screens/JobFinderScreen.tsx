@@ -85,12 +85,30 @@ const JobFinderScreen = ({ navigation }) => {
     hireReason: string;
     jobTitle: string;
   }) => {
-    console.log('Application submitted:', application);
+    if (selectedJob) {
+      // Mark the job as applied and save it
+      const appliedJob = {
+        ...selectedJob,
+        isApplied: true,
+        isSaved: true,
+        applicationDetails: application // Store application details
+      };
+      
+      saveJob(appliedJob);
+      applyForJob(selectedJob.id);
+      
+      Alert.alert(
+        'Application Submitted',
+        `Your application for ${application.jobTitle} has been submitted successfully!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('SavedJobs') // Navigate to SavedJobs after submission
+          }
+        ]
+      );
+    }
     setIsFormVisible(false);
-    Alert.alert(
-      'Application Submitted',
-      `Your application for ${application.jobTitle} has been submitted successfully!`
-    );
   };
 
   const isJobSavedOrApplied = (jobId: string) => {
@@ -182,24 +200,8 @@ const JobFinderScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: colors.buttonBackground }]}
                     onPress={() => {
-                      Alert.alert(
-                        'Confirm Application',
-                        `Are you sure you want to apply for ${item.title}?`,
-                        [
-                          {
-                            text: 'Cancel',
-                            style: 'cancel',
-                          },
-                          {
-                            text: 'Apply',
-                            onPress: () => {
-                              applyForJob(item.id);
-                              setSelectedJob(item);
-                              setIsFormVisible(true);
-                            },
-                          },
-                        ]
-                      );
+                      setSelectedJob(item);
+                      setIsFormVisible(true);
                     }}
                   >
                     <Text style={[styles.buttonText, { color: colors.buttonText }]}>

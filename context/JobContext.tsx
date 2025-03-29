@@ -24,18 +24,17 @@ export const JobProvider = ({ children }) => {
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
 
   const saveJob = (job: Job) => {
-    const jobWithDefaults = { 
-      ...job,
-      isApplied: job.isApplied || false,
-      isSaved: true 
-    };
-
     setSavedJobs(prev => {
       const isAlreadySaved = prev.some(savedJob => savedJob.id === job.id);
-      return isAlreadySaved ? prev : [...prev, jobWithDefaults];
+      if (isAlreadySaved) {
+        return prev.map(savedJob => 
+          savedJob.id === job.id ? { ...savedJob, ...job } : savedJob
+        );
+      }
+      return [...prev, job];
     });
-
-    // Also update the main jobs list to mark as saved
+    
+    // Also update the main jobs list
     setJobs(prev => prev.map(j => 
       j.id === job.id ? { ...j, isSaved: true } : j
     ));
@@ -49,7 +48,7 @@ export const JobProvider = ({ children }) => {
     ));
   };
 
-  const applyForJob = (jobId) => {
+  const applyForJob = (jobId: string) => {
     setJobs(prev => prev.map(job => 
       job.id === jobId ? { ...job, isApplied: true } : job
     ));
