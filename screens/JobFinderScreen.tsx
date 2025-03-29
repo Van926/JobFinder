@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
+import 'react-native-get-random-values';
 import { useJobs } from '../context/JobContext';
 import { useTheme } from '../context/ThemeContext';
 import ApplicationForm from './ApplicationFormScreen';
@@ -24,6 +25,8 @@ interface Job {
   locations: string[];
   workModel: string;
   seniorityLevel: string;
+  isApplied?: boolean;
+  isSaved?: boolean;
 }
 
 const JobFinderScreen = ({ navigation }) => {
@@ -33,7 +36,7 @@ const JobFinderScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-   const { saveJob, applyForJob, cancelApplication } = useJobs();
+  const { savedJobs, saveJob, applyForJob, cancelApplication } = useJobs();
   const { colors } = useTheme();
 
   useEffect(() => {
@@ -42,24 +45,24 @@ const JobFinderScreen = ({ navigation }) => {
 
   const fetchJobs = async () => {
     try {
-     
       const response = await fetch('https://empllo.com/api/v1');
       const data = await response.json();
-      
       
       if (!data.jobs || !Array.isArray(data.jobs)) {
         throw new Error('Invalid jobs format');
       }
 
       const jobsWithIds = data.jobs.map((job: Job) => ({
-        id: 'TEST',
+        id: uuidv4(),
         title: job.title || 'No Title',
         mainCategory: job.mainCategory || 'Unknown Category',
         companyName: job.companyName || 'Unknown Company',
         jobType: job.jobType || 'Job Type Unspecified',
         locations: job.locations || ['Location not Specified'],
-        workModel:job.workModel ||'Work Model unpecified',
-        seniorityLevel:job.seniorityLevel ||'Seniority Level unspecified',
+        workModel: job.workModel || 'Work Model unspecified',
+        seniorityLevel: job.seniorityLevel || 'Seniority Level unspecified',
+        isApplied: false,
+        isSaved: false
       }));
     
       setJobs(jobsWithIds);
@@ -84,7 +87,14 @@ const JobFinderScreen = ({ navigation }) => {
   }) => {
     console.log('Application submitted:', application);
     setIsFormVisible(false);
-    alert(`Application for ${application.jobTitle} submitted successfully!`);
+    Alert.alert(
+      'Application Submitted',
+      `Your application for ${application.jobTitle} has been submitted successfully!`
+    );
+  };
+
+  const isJobSavedOrApplied = (jobId: string) => {
+    return savedJobs.some(job => job.id === jobId);
   };
 
   if (loading) {
@@ -129,7 +139,6 @@ const JobFinderScreen = ({ navigation }) => {
           data={filteredJobs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            
             <View style={[styles.jobItem, { backgroundColor: colors.cardBackground }]}>
               <Text style={[styles.jobTitle, { color: colors.text }]}>{item.title}</Text>
               <Text style={{ color: colors.text }}>Company: {item.companyName}</Text>
@@ -138,63 +147,74 @@ const JobFinderScreen = ({ navigation }) => {
               <Text style={{ color: colors.text }}>Work Model: {item.workModel}</Text>
               <Text style={{ color: colors.text }}>Location: {item.locations.join(', ')}</Text>
 
-              {item.isApplied ? (
-        <>
-          <Text style={[styles.appliedText, { color: colors.text }]}>
-            You have already applied
-          </Text>
-          
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#ff4444' }]}
-            onPress={() => cancelApplication(item.id)}
-          >
-            <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-              Cancel Application
-            </Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-              <View style={styles.buttonContainer}>
-               <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => {
-                    saveJob(item);
-                    Alert.alert(
-                      'Job Saved',
-                      'The job has been successfully saved.', // Corrected message string
-                      [{ text: 'OK' }] // Properly formatted alert buttons array
-                    );
-                  }}
-                >   
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-                    Save Job
+              {isJobSavedOrApplied(item.id) ? (
+                <View style={styles.savedStatusContainer}>
+                  <Text style={[styles.statusText, { color: colors.text }]}>
+                    {item.isApplied ? 'Already applied' : 'Job already saved'}
                   </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.navButton, { backgroundColor: colors.buttonBackground }]}
+                    onPress={() => navigation.navigate('SavedJobs')}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                      View in Saved Jobs
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                    onPress={() => {
+                      saveJob(item);
+                      Alert.alert(
+                        'Job Saved',
+                        `${item.title} has been saved to your list`,
+                        [{ text: 'OK' }]
+                      );
+                    }}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                      Save Job
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-                  onPress={() => {
-                    
-                    applyForJob(item.id);
-                    setSelectedJob(item);
-                    setIsFormVisible(true);
-                  
-                  }}
-                >
-                  <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-                    Apply
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+                    onPress={() => {
+                      Alert.alert(
+                        'Confirm Application',
+                        `Are you sure you want to apply for ${item.title}?`,
+                        [
+                          {
+                            text: 'Cancel',
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'Apply',
+                            onPress: () => {
+                              applyForJob(item.id);
+                              setSelectedJob(item);
+                              setIsFormVisible(true);
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                  >
+                    <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                      Apply
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
-        )}
+          )}
         />
       ) : (
         <Text style={[styles.noJobsText, { color: colors.text }]}>No jobs found.</Text>
       )}
 
-      {/* Application Form Modal */}
       <Modal visible={isFormVisible} animationType="slide">
         {selectedJob && (
           <ApplicationForm
@@ -269,6 +289,22 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  savedStatusContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  statusText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 10,
+    fontStyle: 'italic',
+  },
+  navButton: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    minWidth: 200,
   },
 });
 
